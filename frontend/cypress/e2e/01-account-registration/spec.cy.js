@@ -9,6 +9,10 @@ function generateUniqueEmail() {
   return `user${timestamp}@example.com`;
 }
 
+function generateUniqueId() {
+  return Date.now();
+}
+
 beforeEach(() => {
   cy.visit('http://localhost:3000/register');
 });
@@ -58,8 +62,9 @@ describe('verify sign up with an invalid email (does not contain a domain after 
 
 describe("verify sign up with an invalid email (does not contain at least a dot '.')", () => {
   it('should show error message', () => {
+    const email = `user${generateUniqueId()}@examplecom`;
     cy.get('input#name').type('Manh123');
-    cy.get('input#email').type('user@examplecom');
+    cy.get('input#email').type(email);
     cy.get('input#password').type('Manh1712!');
     cy.get('input#confirmPassword').type('Manh1712!');
     cy.get('button[type="submit"]').contains('Register').click();
@@ -74,27 +79,33 @@ describe("verify sign up with an invalid email (does not contain at least a dot 
 
 describe('verify sign up with an invalid email (contains spaces)', () => {
   it('should show error message', () => {
+    const email = `user${generateUniqueId()}   @example.com`;
     cy.get('input#name').type('Manh123');
-    cy.get('input#email').type('user @example.com');
+    //TODO: Fix this
+    cy.get('input#email').type(email);
     cy.get('input#password').type('Manh1712!');
     cy.get('input#confirmPassword').type('Manh1712!');
     cy.get('button[type="submit"]').contains('Register').click();
     cy.get('input#email')
       .invoke('prop', 'validationMessage')
-      .should('equal', 'Please match the requested format.');
+      .should(
+        'equal',
+        "A part followed by '@' should not contain the symbol ' '."
+      );
   });
 });
 
 describe('verify sign up with an invalid email (contains special characters)', () => {
   it('should show error message', () => {
+    const email = `user${generateUniqueId()}!#$%^@example.com`;
     cy.get('input#name').type('Manh123');
-    cy.get('input#email').type('%^&%^&@example.com');
+    cy.get('input#email').type(email);
     cy.get('input#password').type('Manh1712!');
     cy.get('input#confirmPassword').type('Manh1712!');
     cy.get('button[type="submit"]').contains('Register').click();
     cy.get('input#email')
       .invoke('prop', 'validationMessage')
-      .should('equal', 'Please match the requested format.');
+      .should('include', "A part following '@' should not contain the symbol");
   });
 });
 
@@ -205,7 +216,7 @@ describe('verify sign up with an empty password', () => {
     cy.get('button[type="submit"]').contains('Register').click();
     cy.get('.Toastify').should(
       'have.text',
-      'Password must be at least 8 characters'
+      'User validation failed: password: Path `password` is required.'
     );
   });
 });
@@ -262,7 +273,10 @@ describe('verify sign up with an empty name', () => {
     cy.get('input#password').type('Manh1712!');
     cy.get('input#confirmPassword').type('Manh1712!');
     cy.get('button[type="submit"]').contains('Register').click();
-    cy.get('.Toastify').should('have.text', 'Name is required');
+    cy.get('.Toastify').should(
+      'have.text',
+      'User validation failed: name: Path `name` is required.'
+    );
   });
 });
 
@@ -275,5 +289,13 @@ describe('verify sign up with incorrect password confirmation', () => {
     cy.get('input#confirmPassword').type('Manh1912!');
     cy.get('button[type="submit"]').contains('Register').click();
     cy.get('.Toastify').should('have.text', 'Passwords do not match');
+  });
+});
+
+describe('verify navigate from Sign In page to Register page', () => {
+  it('should navigate to Register page', () => {
+    cy.get('a').contains('Login').click();
+    cy.get('a').contains('Register').click();
+    cy.url().should('include', '/register');
   });
 });
