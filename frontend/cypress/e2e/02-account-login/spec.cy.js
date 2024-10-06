@@ -113,25 +113,6 @@ describe('verify navigate from Register page to Sign In page', () => {
   });
 });
 
-// describe('verify active session after closing the web application', () => {
-//   it('should still be logged in', () => {
-//     cy.get('button').contains('Sign Out').click();
-//     cy.get('button').contains('Sign In').click();
-//     cy.url().should('include', '/login');
-//   });
-// });
-
-// describe('verify multiple active sessions', () => {
-//   it('should still be logged in', () => {
-//     cy.get('input#email').type('john@email.com');
-//     cy.get('input#password').type('123456');
-//     cy.get('button[type="submit"]').contains('Sign In').click();
-//     cy.get('button').contains('Sign Out').click();
-//     cy.get('button').contains('Sign In').click();
-//     cy.url().should('include', '/login');
-//   });
-// });
-
 describe('verify logout', () => {
   it('should log out successfully', () => {
     cy.get('input#email').type('john@email.com');
