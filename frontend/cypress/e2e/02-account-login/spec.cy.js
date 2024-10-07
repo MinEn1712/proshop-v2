@@ -58,7 +58,8 @@ describe("verify invalid email (does not contain at least a dot '.')", () => {
 
 describe('verify invalid email (contains spaces)', () => {
   it('should not login successfully', () => {
-    cy.get('input#email').type('john @email.com');
+    cy.get('input#email').focus();
+    cy.realType('john @email.com');
     cy.get('input#password').type('123456');
     cy.get('button[type="submit"]').contains('Sign In').click();
     cy.get('input#email')
