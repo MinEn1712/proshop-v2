@@ -1,7 +1,5 @@
-describe('template spec', () => {
-  it('passes', () => {
-    cy.visit('http://localhost:3000/register');
-  });
+beforeEach(() => {
+  cy.visit('http://localhost:3000/register');
 });
 
 function generateUniqueEmail() {
@@ -12,10 +10,6 @@ function generateUniqueEmail() {
 function generateUniqueId() {
   return Date.now();
 }
-
-beforeEach(() => {
-  cy.visit('http://localhost:3000/register');
-});
 
 describe('verify successful registration', () => {
   it('should register successfully', () => {
@@ -79,10 +73,11 @@ describe("verify sign up with an invalid email (does not contain at least a dot 
 
 describe('verify sign up with an invalid email (contains spaces)', () => {
   it('should show error message', () => {
-    const email = `user${generateUniqueId()}   @example.com`;
+    const email = `user${generateUniqueId()}     @example.com`;
     cy.get('input#name').type('Manh123');
     //TODO: Fix this
-    cy.get('input#email').type(email);
+    cy.get('input#email').focus();
+    cy.realType(email);
     cy.get('input#password').type('Manh1712!');
     cy.get('input#confirmPassword').type('Manh1712!');
     cy.get('button[type="submit"]').contains('Register').click();
