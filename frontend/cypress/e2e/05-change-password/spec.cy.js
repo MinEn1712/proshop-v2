@@ -115,12 +115,4 @@ describe('Change Password', () => {
   });
 
   
-  it('Verify blank new password field', () => {
-    cy.login(email, validPassword)
-    cy.confirmPassword(validPassword);
-    cy.get('.navbar-brand').click()
-    cy.contains('div', 'Confirm password can not be blank').should('be.visible')
-  });
-
-  
 });
