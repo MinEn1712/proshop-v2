@@ -41,7 +41,6 @@ Cypress.Commands.add('logout', () => {
   cy.get('a.dropdown-item').contains('Logout').click(); 
 });
 
-// Hàm đợi
 Cypress.Commands.add('waitBeforeLogout', (seconds) => {
   cy.wait(seconds * 1000); 
 });
@@ -98,26 +97,39 @@ describe('Edit Profile Functionality', () => {
     cy.logout(); 
   });
 
-  it('TC-EP-006: Update profile with invalid email', () => {
-    cy.login('user@subdomain.example.com', validPassword);
-    cy.navigateToProfile();
-    cy.updateProfile('John Doe', 'userexample.com'); 
-    //cy.contains("Please include an '@' in the email address.").should('be.visible'); // Kiểm tra thông báo lỗi
+  it("TC-EP-006: Update email with missing '@' symbol", () => {
+  cy.login('user@subdomain.example.com', validPassword);
+  cy.navigateToProfile();
+  cy.updateProfile('John Doe', 'userexample.com'); 
+  cy.get('input#email').blur();
+  cy.get('input#email')
+    .invoke('prop', 'validationMessage')
+    .should(
+      'equal',
+      "Please include an '@' in the email address. 'userexample.com' is missing an '@'."
+    );
 
-
-    cy.waitBeforeLogout(6);
-    cy.logout();
+  cy.waitBeforeLogout(6);
+  cy.logout();
 });
 
 
-  it('TC-EP-007: Update profile with incomplete email', () => {
+
+  it("TC-EP-007: Submit profile form without domain field", () => {
   cy.login('user@subdomain.example.com', validPassword);
   cy.navigateToProfile();
   cy.updateProfile('John Doe', 'user@');
-  //cy.contains("Please enter a part following '@'. 'user@' is incomplete.").should('be.visible'); // Kiểm tra thông báo lỗi
+  cy.get('input#email').blur();
+  cy.get('input#email')
+    .invoke('prop', 'validationMessage')
+    .should(
+      'equal',
+      "Please enter a part following '@'. 'user@' is incomplete."
+    );
+
   cy.waitBeforeLogout(6); 
   cy.logout();
-  });
+});
 
 
   it('TC-EP-008: Update email with invalid characters', () => {
@@ -133,7 +145,14 @@ describe('Edit Profile Functionality', () => {
   cy.login('user!name@example.com', validPassword);
   cy.navigateToProfile();
   cy.updateProfile('John Doe', 'user@name@example.com'); 
-  //cy.contains("A part following '@' should not contain the symbol '@'.").should('be.visible'); // Kiểm tra thông báo lỗi
+  cy.get('input#email').blur();
+  cy.get('input#email')
+    .invoke('prop', 'validationMessage')
+    .should(
+      'equal',
+      "A part following '@' should not contain the symbol '@'."
+    );
+
   cy.waitBeforeLogout(6); 
   cy.logout(); 
   });
@@ -148,16 +167,20 @@ describe('Edit Profile Functionality', () => {
   });
 
   it('TC-EP-011: Update email with space character', () => {
-    cy.login('user@examplecom', validPassword);
-    cy.navigateToProfile();
-    cy.updateProfile(undefined, 'user name@example.com');
-    //cy.contains("A part following '@' should not contain the symbol ' '.").should('be.visible');
-    cy.waitBeforeLogout(6); 
-    cy.logout(); 
-  });
+  cy.login('user@examplecom', validPassword);
+  cy.navigateToProfile();
+
+  cy.get('input#email').clear().type('ha le@example.com', { force: true });
+  cy.get('input#email').should('have.value', 'hale@example.com');
+
+  cy.waitBeforeLogout(6); 
+  cy.logout();
+});
+
+
 
   it('TC-EP-012: Update email with consecutive dots', () => {
-    cy.login('user name@example.com', validPassword);
+    cy.login('user@examplecom', validPassword);
     cy.navigateToProfile();
     cy.updateProfile(undefined, 'user..name@example.com');
     cy.contains('Invalid email format').should('be.visible');
