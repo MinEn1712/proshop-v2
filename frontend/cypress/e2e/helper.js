@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 export function generateUniqueEmail() {
   const timestamp = Date.now();
   return `user${timestamp}@example.com`;
@@ -85,4 +86,36 @@ export function fillInShipping(address, city, postalCode, country) {
   cy.get('#postalCode').type(postalCode);
   cy.get('#country').type(country);
   cy.contains('button[type="submit"]', 'Continue').click();
+}
+
+export function viewOrderHistory() {
+  cy.get('a#username').click();
+  cy.get('a.dropdown-item[href="/profile"]').click();
+  cy.wait(1000);
+  cy.get('table, tbody, tr').should('not.be.empty');
+}
+
+export function placeAnOrderToView(){
+  cy.get('.product-title.card-title').first().scrollIntoView().click();
+  cy.wait(1000);
+  cy.contains('Add To Cart').click();
+  cy.contains('Proceed To Checkout').click();
+  cy.get('#address').type('5 nguyen trai');
+  cy.get('#city').type('HCM');
+  cy.get('#postalCode').type('72000');
+  cy.get('#country').type('VN');
+  cy.contains('Continue').click();
+  cy.contains('Continue').click();
+  cy.get('button').contains('Place Order').click();
+}
+
+export function confirmChangePassword(password, confirmPassword) {
+  cy.wait(1000);
+  cy.get('a#username').click();
+  cy.get('a.dropdown-item[href="/profile"]').click();
+  cy.get('#password').type(password);
+  if (confirmPassword !== undefined) {
+    cy.get('#confirmPassword').type(confirmPassword);
+  }
+  cy.contains('Update').click();
 }
