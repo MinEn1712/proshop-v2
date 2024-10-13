@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 export function generateUniqueEmail() {
   const timestamp = Date.now();
   return `user${timestamp}@example.com`;
@@ -108,7 +109,7 @@ export function placeAnOrderToView(){
   cy.get('button').contains('Place Order').click();
 }
 
-export function confirmPassword() {
+export function confirmChangePassword(password, confirmPassword) {
   cy.wait(1000);
   cy.get('a#username').click();
   cy.get('a.dropdown-item[href="/profile"]').click();
