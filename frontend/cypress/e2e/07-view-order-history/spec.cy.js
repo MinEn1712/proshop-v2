@@ -113,16 +113,15 @@ it('Verify view order detail for existing order and past order', () => {
             } else {
               cy.get('.alert').should('contain', 'Not Delivered');
             }
+          });
 
-            // Kiểm tra trạng thái thanh toán
-            // if (orderData.isPaid) {
-            //   cy.get('.alert').should(
-            //     'contain',
-            //     `Paid on ${new Date(orderData.paidAt).toLocaleDateString()}`
-            //   );
-            // } else {
-            //   cy.get('div[role="alert"]').contains('Not Paid').should('exist').and('be.visible');
-            // }
+        // Kiểm tra trạng thái thanh toán
+        cy.get('.list-group-item')
+          .eq(1)
+          .within(() => {
+            cy.contains('h2', 'Payment Method');
+            cy.get('p').eq(0).should('have.text', 'Method: PayPal');
+            cy.contains('div[role="alert"]', 'Not Paid');
           });
 
         // Kiểm tra danh sách sản phẩm trong đơn hàng
