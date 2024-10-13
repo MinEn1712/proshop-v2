@@ -1,89 +1,84 @@
-import {Login} from './helper'
+import { login } from '../helper';
 
-const longuser = {
-    email: 'iamaverylongemailandpasswordverylongimtesting@gmail.com',
-    password: '12345678',
-    name: 'I am a very long email and password! Very long I\'m testing'
-}
+const longUserInfo = {
+  email: 'iamaverylongemailandpasswordverylongimtesting@gmail.com',
+  password: '12345678',
+  name: "I am a very long email and password! Very long I'm testing",
+};
+const userNoOrder = {
+  email: 'john@email.com',
+  password: '123456',
+  name: 'John Doe',
+};
+const userHavingOrder = {
+  email: 'test@gmail.com',
+  password: '123456',
+  name: 'test',
+};
 
-const usernoorder = {
-    email: 'john@email.com',
-    password: '123456',
-    name: 'John Doe'
-}
-const userhavingorder = {
-    email: 'test@gmail.com',
-    password: '123456',
-    name: 'test'
-}
-describe('View Profile Function',()=>{
-    beforeEach(()=>{
-        cy.visit('http://127.0.0.1:3000/'); 
-    })
-    
-    
-    const VerifyNameEmail = (name, email) => {
-        
-        cy.get('input#name').should('have.value', name);
-        cy.get('input#email').should('have.value', email);
-    }; 
+describe('View Profile Function', () => {
+  beforeEach(() => {
+    cy.visit('http://localhost:3000/');
+  });
 
-    it('View profile successfully With User Having Orders' , () => {
-        
-        Login(userhavingorder.email, userhavingorder.password);
-        cy.get('a#username').click();
-        cy.get('a[href="/profile"]').click({force: true})
+  function verifyNameEmail(name, email) {
+    cy.get('input#name').should('have.value', name);
+    cy.get('input#email').should('have.value', email);
+  }
 
-        //Verify list of orders >0
-        cy.get('tbody').find('tr').should('have.length.greaterThan',0);
+  it('View profile successfully With User Having Orders', () => {
+    login(userHavingOrder.email, userHavingOrder.password);
+    cy.get('a#username').click();
+    cy.get('a[href="/profile"]').click({ force: true });
 
-        //Verify name
-        VerifyNameEmail(userhavingorder.name, userhavingorder.email);
-    });
+    //Verify list of orders >0
+    cy.get('tbody').find('tr').should('have.length.greaterThan', 0);
 
-    it('View profile successfully With User Having No Orders' , () => {
-        cy.get('a[href="/login"]').click();
-        Login(usernoorder.email, usernoorder.password);
-        cy.get('a#username').click();
-        cy.get('a[href="/profile"]').click({force: true})
+    //Verify name
+    verifyNameEmail(userHavingOrder.name, userHavingOrder.email);
+  });
 
-        //Verify list of orders >0
-        cy.get('tbody').find('tr').should('have.length', 0);
+  it('View profile successfully With User Having No Orders', () => {
+    cy.get('a[href="/login"]').click();
+    login(userNoOrder.email, userNoOrder.password);
+    cy.get('a#username').click();
+    cy.get('a[href="/profile"]').click({ force: true });
 
-        //Verify name
-        VerifyNameEmail(usernoorder.name, usernoorder.email);
-    });
+    //Verify list of orders >0
+    cy.get('tbody').find('tr').should('have.length', 0);
 
-    it('View profile unsuccessfully With non-logged-in user' , () => {
-   
-        cy.visit('http://127.0.0.1:3000/profile')
-        cy.wait(500);
-        cy.url().should('include', '/login');
-    });
+    //Verify name
+    verifyNameEmail(userNoOrder.name, userNoOrder.email);
+  });
 
-    it('Verify non-logged-in user do not have Profile button on the navigation bar' , () => {
-        cy.get('a#username').should('not.exist');
-        cy.get('a[href="/profile"]').should('not.exist');
-    });
+  it('View profile unsuccessfully With non-logged-in user', () => {
+    cy.visit('http://localhost:3000/profile');
+    cy.wait(500);
+    cy.url().should('include', '/login');
+  });
 
-    it('Verify user profile information display', ()=>{
-        cy.get('a[href="/login"]').click();
-        Login(userhavingorder.email, userhavingorder.password);
-        cy.get('a#username').click();
-        cy.get('a[href="/profile"]').click({force: true})
+  it('Verify non-logged-in user do not have Profile button on the navigation bar', () => {
+    cy.get('a#username').should('not.exist');
+    cy.get('a[href="/profile"]').should('not.exist');
+  });
 
-        //Verify name
-        VerifyNameEmail(userhavingorder.name, userhavingorder.email);
-    });
+  it('Verify user profile information display', () => {
+    cy.get('a[href="/login"]').click();
+    login(userHavingOrder.email, userHavingOrder.password);
+    cy.get('a#username').click();
+    cy.get('a[href="/profile"]').click({ force: true });
 
-    it('Verify Profile page with long usernames and emails', ()=>{
-        cy.get('a[href="/login"]').click();
-        Login(longuser.email, longuser.password);
-        cy.get('a#username').click();
-        cy.get('a[href="/profile"]').click({force: true})
+    //Verify name
+    verifyNameEmail(userHavingOrder.name, userHavingOrder.email);
+  });
 
-        //Verify name
-        VerifyNameEmail(longuser.name, longuser.email);
-    });
+  it('Verify Profile page with long usernames and emails', () => {
+    cy.get('a[href="/login"]').click();
+    login(longUserInfo.email, longUserInfo.password);
+    cy.get('a#username').click();
+    cy.get('a[href="/profile"]').click({ force: true });
 
-})
+    //Verify name
+    verifyNameEmail(longUserInfo.name, longUserInfo.email);
+  });
+});
