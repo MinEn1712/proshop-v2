@@ -1,4 +1,5 @@
 /* eslint-disable no-undef */
+//user's login data must be original email and password:
 const validPassword = '123456';
 const initialEmail = 'john@email.com';
 const defaultName = 'John Doe';
@@ -220,5 +221,13 @@ describe('Edit Profile Functionality', () => {
     cy.navigateToProfile();
     cy.updateProfile('John Doe', 'jane@email.com'); 
     cy.contains('E11000 duplicate key error collection').should('be.visible'); 
+  });
+//Reset to original email and password
+    it('TC-EP-017: Reset to original name and email for next function', () => {
+    cy.login('user..name@example.com', validPassword);
+    cy.navigateToProfile();
+    cy.updateProfile('John Doe', 'john@email.com'); 
+    cy.waitBeforeLogout(6); 
+    cy.logout();
   });
 });
