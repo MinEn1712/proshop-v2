@@ -1,53 +1,32 @@
 /* eslint-disable no-undef */
 
 //Trước khi chạy test file này cần xóa hết đơn hàng
-Cypress.Commands.add('login', (email, password) => {
-  cy.visit('http://localhost:3000/login');
-  cy.get('#email').type(email);
-  cy.get('#password').type(password);
-  cy.get('button').contains('Sign In').click();
-});
 
-Cypress.Commands.add('viewOrderHistory', () => {
-  cy.get('a#username').click();
-  cy.get('a.dropdown-item[href="/profile"]').click();
-  cy.wait(1000);
-  cy.get('table, tbody, tr').should('not.be.empty');
-});
-
-Cypress.Commands.add('placeAnOrder', () => {
-  cy.get('.product-title.card-title').first().scrollIntoView().click();
-  cy.wait(1000);
-  cy.contains('Add To Cart').click();
-  cy.contains('Proceed To Checkout').click();
-  cy.get('#address').type('5 nguyen trai');
-  cy.get('#city').type('HCM');
-  cy.get('#postalCode').type('72000');
-  cy.get('#country').type('VN');
-  cy.contains('Continue').click();
-  cy.contains('Continue').click();
-  cy.get('button').contains('Place Order').click();
-});
+import {
+  login,
+  placeAnOrderToView,
+  viewOrderHistory
+} from '../helper';
 
 beforeEach(() => {
   cy.visit('http://localhost:3000');
 });
 
 it('Verify view order history with no orders in order history', () => {
-  cy.login('john@email.com', '123456');
+  login('john@email.com', '123456');
   cy.get('a#username').click();
   cy.get('a.dropdown-item[href="/profile"]').click();
   cy.get('tbody').should('be.empty');
 });
 
 it('Verify view existing and past orders', () => {
-  cy.login('john@email.com', '123456');
-  cy.placeAnOrder();
-  cy.viewOrderHistory();
+  login('john@email.com', '123456');
+  placeAnOrderToView();
+  viewOrderHistory();
 });
 
 it('Verify viewing order history with delivery status and payment status', () => {
-  cy.login('john@email.com', '123456'); // Pre-condition: User is logged in
+  login('john@email.com', '123456'); // Pre-condition: User is logged in
   cy.get('a#username').click();
   cy.get('a.dropdown-item[href="/profile"]').click();
   // Check delivery status for each order
@@ -59,7 +38,7 @@ it('Verify viewing order history with delivery status and payment status', () =>
 });
 
 it('Verify view order detail for existing order and past order', () => {
-  cy.login('john@email.com', '123456'); // Pre-condition: User is logged in
+  login('john@email.com', '123456'); // Pre-condition: User is logged in
   cy.get('a#username').click();
   cy.get('a.dropdown-item[href="/profile"]').click();
   cy.get('a').contains('Details').should('be.visible'); // Click on details button
@@ -124,21 +103,6 @@ it('Verify view order detail for existing order and past order', () => {
             cy.contains('div[role="alert"]', 'Not Paid');
           });
 
-        // Kiểm tra danh sách sản phẩm trong đơn hàng
-        // orderData.orderItems.forEach((item, index) => {
-        //   cy.get('list-group-item')
-        //     .third()
-        //     .within(() => {
-        //       cy.contains('a', item.name).should('exist');
-        //       cy.contains(
-        //         '.col-md-4',
-        //         `${item.qty} x $${item.price} = $${(item.qty * item.price).toFixed(
-        //           2
-        //         )}`
-        //       ).should('exist');
-        //     });
-        // });
-        cy.log(JSON.stringify(orderData));
         //Kiểm tra tên sản phẩm
         cy.get(`a[href="/product/${productId}"]`).should(
           'have.text',
