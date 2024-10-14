@@ -95,7 +95,7 @@ export function viewOrderHistory() {
   cy.get('table, tbody, tr').should('not.be.empty');
 }
 
-export function placeAnOrderToView(){
+export function placeAnOrderToView() {
   cy.get('.product-title.card-title').first().scrollIntoView().click();
   cy.wait(1000);
   cy.contains('Add To Cart').click();
@@ -119,3 +119,34 @@ export function confirmChangePassword(password, confirmPassword) {
   }
   cy.contains('Update').click();
 }
+
+Cypress.Commands.add('scrollToVisibleElement', (selector) => {
+  cy.get(selector).filter(':visible').first().scrollIntoView();
+});
+
+Cypress.Commands.add('addToCart', (productName) => {
+  cy.scrollToVisibleElement(`a:contains(${productName})`).click();
+  cy.get('button.btn.btn-primary')
+    .first()
+    .scrollIntoView()
+    .then(($btn) => {
+      if ($btn.is(':visible')) {
+        cy.wrap($btn).click();
+      } else {
+        cy.log('Can not find "Add To Cart" button.');
+        throw new Error('Can not find "Add To Cart" button.');
+      }
+    });
+});
+
+Cypress.Commands.add('getPayPalButton', () => {
+  cy.get('iframe[title="PayPal"]')
+    .should('exist')
+    .then(($iframe) => {
+      const $body = $iframe.contents().find('body');
+      cy.wrap($body)
+        .find('div[data-funding-source="paypal"]')
+        .should('be.visible')
+        .click();
+    });
+});
