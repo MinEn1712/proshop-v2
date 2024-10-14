@@ -1,62 +1,21 @@
 /* eslint-disable no-undef */
+import '../helper';
+
 //user's login data must be original email and password:
 const validPassword = '123456';
 const initialEmail = 'john@email.com';
 const defaultName = 'John Doe';
-
-Cypress.Commands.add('login', (email, password) => {
-  cy.visit('http://localhost:3000/login'); 
-  cy.wait(200);
-
-  cy.get('#email', { timeout: 10000 }) 
-    .should('be.visible') 
-    .clear() 
-    .type(email);
-
-  cy.get('#password', { timeout: 10000 }) 
-    .should('be.visible') 
-    .clear() 
-    .type(password); 
-
-  cy.get('button').contains('Sign In', { timeout: 10000 }).click();
-});
-
-Cypress.Commands.add('navigateToProfile', () => {
-  cy.get('a#username').click(); 
-  cy.get('a.dropdown-item[href="/profile"]').click(); 
-});
-
-
-Cypress.Commands.add('updateProfile', (name, email) => {
-  if (name !== undefined) {
-    cy.get('input[id="name"]').clear().type(name); 
-  }
-  if (email !== undefined) {
-    cy.get('input[id="email"]').clear().type(email); 
-  }
-  cy.get('button[type="submit"]').contains('Update').click(); 
-});
-
-Cypress.Commands.add('logout', () => {
-  cy.get('a#username').click(); 
-  cy.get('a.dropdown-item').contains('Logout').click(); 
-});
-
-Cypress.Commands.add('waitBeforeLogout', (seconds) => {
-  cy.wait(seconds * 1000); 
-});
-
-beforeEach(() => {
-  cy.visit('http://localhost:3000');
-});
-
 describe('Edit Profile Functionality', () => {
+  beforeEach(() => {
+    cy.visit('http://localhost:3000');
+  });
+
   it('TC-EP-001: Update full name with valid input', () => {
     cy.login(initialEmail, validPassword);
     cy.navigateToProfile();
     cy.updateProfile('John New', undefined);
     cy.contains('Profile updated successfully').should('be.visible');
-    cy.waitBeforeLogout(6); 
+    cy.wait(6); 
     cy.logout();
   });
 
@@ -65,7 +24,7 @@ describe('Edit Profile Functionality', () => {
     cy.navigateToProfile();
     cy.updateProfile(undefined, 'newjohn@email.com'); 
     cy.contains('Profile updated successfully').should('be.visible'); 
-    cy.waitBeforeLogout(6); 
+    cy.wait(6); 
     cy.logout();
   });
 
@@ -75,7 +34,7 @@ describe('Edit Profile Functionality', () => {
     cy.navigateToProfile();
     cy.updateProfile('John Smith', 'john.smith@example.com');
     cy.contains('Profile updated successfully').should('be.visible');
-    cy.waitBeforeLogout(6);
+    cy.wait(6);
     cy.logout();
   });
 
@@ -85,7 +44,7 @@ describe('Edit Profile Functionality', () => {
     cy.navigateToProfile();
     cy.updateProfile(undefined, undefined);
     cy.contains('Profile updated successfully').should('be.visible');
-    cy.waitBeforeLogout(6); 
+    cy.wait(6); 
     cy.logout();
   });
 
@@ -94,7 +53,7 @@ describe('Edit Profile Functionality', () => {
     cy.navigateToProfile();
     cy.updateProfile(undefined, 'user@subdomain.example.com');
     cy.contains('Profile updated successfully').should('be.visible');
-    cy.waitBeforeLogout(6);
+    cy.wait(6);
     cy.logout(); 
   });
 
@@ -110,7 +69,7 @@ describe('Edit Profile Functionality', () => {
       "Please include an '@' in the email address. 'userexample.com' is missing an '@'."
     );
 
-  cy.waitBeforeLogout(6);
+  cy.wait(6);
   cy.logout();
 });
 
@@ -128,7 +87,7 @@ describe('Edit Profile Functionality', () => {
       "Please enter a part following '@'. 'user@' is incomplete."
     );
 
-  cy.waitBeforeLogout(6); 
+  cy.wait(6); 
   cy.logout();
 });
 
@@ -138,7 +97,7 @@ describe('Edit Profile Functionality', () => {
     cy.navigateToProfile();
     cy.updateProfile(undefined, 'user!name@example.com');
     cy.contains('Invalid characters').should('be.visible');
-    cy.waitBeforeLogout(6); 
+    cy.wait(6); 
     cy.logout();
   });
 
@@ -154,7 +113,7 @@ describe('Edit Profile Functionality', () => {
       "A part following '@' should not contain the symbol '@'."
     );
 
-  cy.waitBeforeLogout(6); 
+  cy.wait(6); 
   cy.logout(); 
   });
 
@@ -163,7 +122,7 @@ describe('Edit Profile Functionality', () => {
     cy.navigateToProfile();
     cy.updateProfile(undefined, 'user@examplecom');
     cy.contains('Invalid email format').should('be.visible');
-    cy.waitBeforeLogout(6); 
+    cy.wait(6); 
     cy.logout(); 
   });
 
@@ -174,7 +133,7 @@ describe('Edit Profile Functionality', () => {
   cy.get('input#email').clear().type('ha le@example.com', { force: true });
   cy.get('input#email').should('have.value', 'hale@example.com');
 
-  cy.waitBeforeLogout(6); 
+  cy.wait(6); 
   cy.logout();
 });
 
@@ -185,7 +144,7 @@ describe('Edit Profile Functionality', () => {
     cy.navigateToProfile();
     cy.updateProfile(undefined, 'user..name@example.com');
     cy.contains('Invalid email format').should('be.visible');
-    cy.waitBeforeLogout(6); 
+    cy.wait(6); 
     cy.logout();
   });
 
@@ -194,7 +153,7 @@ describe('Edit Profile Functionality', () => {
     cy.navigateToProfile();
     cy.updateProfile('', undefined);
     cy.contains('Full name is required').should('be.visible');
-    cy.waitBeforeLogout(6); 
+    cy.wait(6); 
     cy.logout(); 
   });
 
@@ -203,7 +162,7 @@ describe('Edit Profile Functionality', () => {
     cy.navigateToProfile();
     cy.updateProfile(undefined, '');
     cy.contains('Email is required').should('be.visible');
-    cy.waitBeforeLogout(6); 
+    cy.wait(6); 
     cy.logout(); 
   });
 
@@ -212,7 +171,7 @@ describe('Edit Profile Functionality', () => {
     cy.navigateToProfile();
     cy.updateProfile('', '');
     cy.contains('Email is required').should('be.visible');
-    cy.waitBeforeLogout(6); 
+    cy.wait(6); 
     cy.logout(); 
   });
 
@@ -227,7 +186,7 @@ describe('Edit Profile Functionality', () => {
     cy.login('user..name@example.com', validPassword);
     cy.navigateToProfile();
     cy.updateProfile('John Doe', 'john@email.com'); 
-    cy.waitBeforeLogout(6); 
+    cy.wait(6); 
     cy.logout();
   });
 });

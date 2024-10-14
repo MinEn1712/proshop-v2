@@ -95,7 +95,7 @@ export function viewOrderHistory() {
   cy.get('table, tbody, tr').should('not.be.empty');
 }
 
-export function placeAnOrderToView(){
+export function placeAnOrderToView() {
   cy.get('.product-title.card-title').first().scrollIntoView().click();
   cy.wait(1000);
   cy.contains('Add To Cart').click();
@@ -119,3 +119,37 @@ export function confirmChangePassword(password, confirmPassword) {
   }
   cy.contains('Update').click();
 }
+
+Cypress.Commands.add('login', (email, password) => {
+  cy.visit('http://localhost:3000/login');
+  cy.wait(200);
+
+  cy.get('#email', { timeout: 10000 }).should('be.visible').clear().type(email);
+
+  cy.get('#password', { timeout: 10000 })
+    .should('be.visible')
+    .clear()
+    .type(password);
+
+  cy.get('button').contains('Sign In', { timeout: 10000 }).click();
+});
+
+Cypress.Commands.add('navigateToProfile', () => {
+  cy.get('a#username').click();
+  cy.get('a.dropdown-item[href="/profile"]').click();
+});
+
+Cypress.Commands.add('updateProfile', (name, email) => {
+  if (name !== undefined) {
+    cy.get('input[id="name"]').clear().type(name);
+  }
+  if (email !== undefined) {
+    cy.get('input[id="email"]').clear().type(email);
+  }
+  cy.get('button[type="submit"]').contains('Update').click();
+});
+
+Cypress.Commands.add('logout', () => {
+  cy.get('a#username').click({ force: true });
+  cy.get('a.dropdown-item').contains('Logout').click();
+});
