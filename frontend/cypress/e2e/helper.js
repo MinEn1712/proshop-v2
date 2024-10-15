@@ -23,6 +23,21 @@ export function login(email, password) {
   cy.get('button[type="submit"]').contains('Sign In').click();
 }
 
+export function navigateToProfile() {
+  cy.get('a#username').click();
+  cy.get('a.dropdown-item[href="/profile"]').click();
+}
+
+export function updateProfile(name, email) {
+  if (name !== undefined) {
+    cy.get('input[id="name"]').clear().type(name);
+  }
+  if (email !== undefined) {
+    cy.get('input[id="email"]').clear().type(email);
+  }
+  cy.get('button[type="submit"]').contains('Update').click();
+}
+
 export function addToCart(productPath, qty) {
   cy.visit('http://localhost:3000/');
   cy.get('.row').find(`a[href="${productPath}"]`).first().click();
@@ -95,7 +110,7 @@ export function viewOrderHistory() {
   cy.get('table, tbody, tr').should('not.be.empty');
 }
 
-export function placeAnOrderToView(){
+export function placeAnOrderToView() {
   cy.get('.product-title.card-title').first().scrollIntoView().click();
   cy.wait(1000);
   cy.contains('Add To Cart').click();
@@ -118,4 +133,9 @@ export function confirmChangePassword(password, confirmPassword) {
     cy.get('#confirmPassword').type(confirmPassword);
   }
   cy.contains('Update').click();
+}
+
+export function logout() {
+  cy.get('a#username').click({ force: true });
+  cy.get('a.dropdown-item').contains('Logout').click();
 }

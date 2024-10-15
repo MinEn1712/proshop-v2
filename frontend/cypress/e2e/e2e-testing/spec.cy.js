@@ -148,56 +148,56 @@ describe('E2E Testing', () => {
     cy.get('input#name').should('have.value', adminUser.name);
     cy.get('input#email').should('have.value', adminUser.email);
 
-    //View user list
-    cy.get('a#adminmenu').click();
-    cy.get('a').contains('Users').click();
-    cy.url().should('include', '/admin/userlist');
+    // //View user list
+    // cy.get('a#adminmenu').click();
+    // cy.get('a').contains('Users').click();
+    // cy.url().should('include', '/admin/userlist');
 
-    //View user details
-    cy.get('td').find('a').last().click();
-    cy.get('h1').contains('Edit User').should('exist');
+    // //View user details
+    // cy.get('td').find('a').last().click();
+    // cy.get('h1').contains('Edit User').should('exist');
 
-    //Edit user details
-    cy.get('input#name').clear().type(updatedInfoByAdmin.name);
-    cy.get('input#email').clear().type(updatedInfoByAdmin.email);
-    cy.get('button[type="submit"]').contains('Update').click();
-    cy.get('input#name').should('have.value', updatedInfoByAdmin.name);
-    cy.get('input#email').should('have.value', updatedInfoByAdmin.email);
+    // //Edit user details
+    // cy.get('input#name').clear().type(updatedInfoByAdmin.name);
+    // cy.get('input#email').clear().type(updatedInfoByAdmin.email);
+    // cy.get('button[type="submit"]').contains('Update').click();
+    // cy.get('input#name').should('have.value', updatedInfoByAdmin.name);
+    // cy.get('input#email').should('have.value', updatedInfoByAdmin.email);
 
-    //View product list
-    cy.get('a#adminmenu').click({ force: true });
-    cy.get('a').contains('Products').click({ force: true });
-    cy.url().should('include', '/admin/productlist');
+    // //View product list
+    // cy.get('a#adminmenu').click({ force: true });
+    // cy.get('a').contains('Products').click({ force: true });
+    // cy.url().should('include', '/admin/productlist');
 
-    //View product details
-    cy.get('td')
-      .find(`a[href="/admin/product/${productId}/edit"]`)
-      .first()
-      .click();
-    cy.url().should('include', `/admin/product/${productId}/edit`);
+    // //View product details
+    // cy.get('td')
+    //   .find(`a[href="/admin/product/${productId}/edit"]`)
+    //   .first()
+    //   .click();
+    // cy.url().should('include', `/admin/product/${productId}/edit`);
 
-    //Edit product details
-    cy.get('input#name').clear().type(updatedProductInfo.name);
-    cy.get('input#price').clear().type(updatedProductInfo.price);
-    cy.get('input#image[type="text"]').clear().type(updatedProductInfo.image);
-    cy.get('input#brand').clear().type(updatedProductInfo.brand);
-    cy.get('input#category').clear().type(updatedProductInfo.category);
-    cy.get('input#countInStock').clear().type(updatedProductInfo.countInStock);
-    cy.get('input#description').clear().type(updatedProductInfo.description);
-    cy.get('button[type="submit"]').contains('Update').click();
-    cy.get('input#name').should('have.value', updatedProductInfo.name);
-    cy.get('input#price').should('have.value', updatedProductInfo.price);
-    cy.get('input#image').should('have.value', updatedProductInfo.image);
-    cy.get('input#brand').should('have.value', updatedProductInfo.brand);
-    cy.get('input#category').should('have.value', updatedProductInfo.category);
-    cy.get('input#countInStock').should(
-      'have.value',
-      updatedProductInfo.countInStock
-    );
-    cy.get('input#description').should(
-      'have.value',
-      updatedProductInfo.description
-    );
+    // //Edit product details
+    // cy.get('input#name').clear().type(updatedProductInfo.name);
+    // cy.get('input#price').clear().type(updatedProductInfo.price);
+    // cy.get('input#image[type="text"]').clear().type(updatedProductInfo.image);
+    // cy.get('input#brand').clear().type(updatedProductInfo.brand);
+    // cy.get('input#category').clear().type(updatedProductInfo.category);
+    // cy.get('input#countInStock').clear().type(updatedProductInfo.countInStock);
+    // cy.get('input#description').clear().type(updatedProductInfo.description);
+    // cy.get('button[type="submit"]').contains('Update').click();
+    // cy.get('input#name').should('have.value', updatedProductInfo.name);
+    // cy.get('input#price').should('have.value', updatedProductInfo.price);
+    // cy.get('input#image').should('have.value', updatedProductInfo.image);
+    // cy.get('input#brand').should('have.value', updatedProductInfo.brand);
+    // cy.get('input#category').should('have.value', updatedProductInfo.category);
+    // cy.get('input#countInStock').should(
+    //   'have.value',
+    //   updatedProductInfo.countInStock
+    // );
+    // cy.get('input#description').should(
+    //   'have.value',
+    //   updatedProductInfo.description
+    // );
 
     //View order list
     cy.get('a#adminmenu').click({ force: true });

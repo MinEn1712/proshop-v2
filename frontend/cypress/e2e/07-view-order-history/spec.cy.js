@@ -1,12 +1,5 @@
-/* eslint-disable no-undef */
-
 //Trước khi chạy test file này cần xóa hết đơn hàng
-
-import {
-  login,
-  placeAnOrderToView,
-  viewOrderHistory
-} from '../helper';
+import { login, placeAnOrderToView, viewOrderHistory } from '../helper';
 
 beforeEach(() => {
   cy.visit('http://localhost:3000');

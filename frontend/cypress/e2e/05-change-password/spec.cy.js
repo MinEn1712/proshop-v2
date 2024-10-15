@@ -1,6 +1,4 @@
-/* eslint-disable no-undef */
 //Trước khi chạy test file này phải đổi mật khẩu của user về ban đầu (123456)
-
 import { confirmChangePassword, login } from '../helper';
 
 const validPassword = 'N3wP@ss12e!';
