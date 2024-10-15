@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 export function generateUniqueEmail() {
   const timestamp = Date.now();
   return `user${timestamp}@example.com`;
@@ -23,6 +22,21 @@ export function login(email, password) {
   cy.get('button[type="submit"]').contains('Sign In').click();
 }
 
+export function navigateToProfile() {
+  cy.get('a#username').click();
+  cy.get('a.dropdown-item[href="/profile"]').click();
+}
+
+export function updateProfile(name, email) {
+  if (name !== undefined) {
+    cy.get('input[id="name"]').clear().type(name);
+  }
+  if (email !== undefined) {
+    cy.get('input[id="email"]').clear().type(email);
+  }
+  cy.get('button[type="submit"]').contains('Update').click();
+}
+
 export function addToCart(productPath, qty) {
   cy.visit('http://localhost:3000/');
   cy.get('.row').find(`a[href="${productPath}"]`).first().click();
@@ -30,6 +44,26 @@ export function addToCart(productPath, qty) {
     .select(qty, { force: true })
     .trigger('change');
   cy.contains('button', 'Add To Cart').click();
+}
+
+export function addProductToCart(productName) {
+  cy.get(`a:contains(${productName})`)
+    .filter(':visible')
+    .first()
+    .scrollIntoView()
+    .click();
+
+  cy.get('button.btn.btn-primary')
+    .first()
+    .scrollIntoView()
+    .then(($btn) => {
+      if ($btn.is(':visible')) {
+        cy.wrap($btn).click();
+      } else {
+        cy.log('Can not find "Add To Cart" button.');
+        throw new Error('Can not find "Add To Cart" button.');
+      }
+    });
 }
 
 export function verifyShoppingCart(productNumber, qtyList) {
@@ -109,6 +143,19 @@ export function placeAnOrderToView() {
   cy.get('button').contains('Place Order').click();
 }
 
+export function getPayPalButton() {
+  return cy
+    .get('iframe[title="PayPal"]')
+    .should('exist')
+    .then(($iframe) => {
+      const $body = $iframe.contents().find('body');
+      cy.wrap($body)
+        .find('div[data-funding-source="paypal"]')
+        .should('be.visible')
+        .click();
+    });
+}
+
 export function confirmChangePassword(password, confirmPassword) {
   cy.wait(1000);
   cy.get('a#username').click();
@@ -120,33 +167,7 @@ export function confirmChangePassword(password, confirmPassword) {
   cy.contains('Update').click();
 }
 
-Cypress.Commands.add('scrollToVisibleElement', (selector) => {
-  cy.get(selector).filter(':visible').first().scrollIntoView();
-});
-
-Cypress.Commands.add('addToCart', (productName) => {
-  cy.scrollToVisibleElement(`a:contains(${productName})`).click();
-  cy.get('button.btn.btn-primary')
-    .first()
-    .scrollIntoView()
-    .then(($btn) => {
-      if ($btn.is(':visible')) {
-        cy.wrap($btn).click();
-      } else {
-        cy.log('Can not find "Add To Cart" button.');
-        throw new Error('Can not find "Add To Cart" button.');
-      }
-    });
-});
-
-Cypress.Commands.add('getPayPalButton', () => {
-  cy.get('iframe[title="PayPal"]')
-    .should('exist')
-    .then(($iframe) => {
-      const $body = $iframe.contents().find('body');
-      cy.wrap($body)
-        .find('div[data-funding-source="paypal"]')
-        .should('be.visible')
-        .click();
-    });
-});
+export function logout() {
+  cy.get('a#username').click();
+  cy.get('a.dropdown-item').contains('Logout').click();
+}
