@@ -1,18 +1,104 @@
-import '../helper';
 import {
   addProductToCart,
+  calcPrices,
   fillInShipping,
-  getPayPalButton,
   login,
   navigateToProfile,
 } from '../helper';
+
 //Make sure cart and order list are empty, login data as below before running script
 const validPassword = '123456';
 const initialEmail = 'john@email.com';
 
-// products information
-const airpods = { name: 'Airpods Wireless Bluetooth Headphones', price: 89.99 };
-const iphone = { name: 'iPhone 13 Pro 256GB Memory', price: 599.99 };
+//Payment information (change to your own account)
+const paymentAccount = 'proshopbuyer123@gmail.com';
+const paymentPassword = '12345678';
+
+// Products information
+const airpods = {
+  name: 'Airpods Wireless Bluetooth Headphones',
+  price: 89.99,
+  qty: 1,
+};
+const iphone = { name: 'iPhone 13 Pro 256GB Memory', price: 599.99, qty: 1 };
+
+//Reference:
+//https://whattodevnow.medium.com/testing-paypal-checkout-flow-with-cypress-6c0ebd1321ff
+/**
+ * Returns an iframe content
+ */
+Cypress.Commands.add('iframe', { prevSubject: 'element' }, ($iframe) => {
+  return new Cypress.Promise((resolve) => {
+    $iframe.ready(function () {
+      resolve($iframe.contents().find('body'));
+    });
+  });
+});
+
+// Used to keep the reference to the popup window
+const state = {};
+
+/**
+ * Intercepts calls to window.open() to keep a reference to the new window
+ */
+Cypress.Commands.add('capturePopup', () => {
+  cy.window().then((win) => {
+    const open = win.open;
+    cy.stub(win, 'open').callsFake((...params) => {
+      // Capture the reference to the popup
+      state.popup = open(...params);
+      return state.popup;
+    });
+  });
+});
+
+/**
+ * Returns a wrapped body of a captured popup
+ */
+Cypress.Commands.add('popup', () => {
+  const popup = Cypress.$(state.popup.document);
+  return cy.wrap(popup.contents().find('body'));
+});
+
+/**
+ * Clicks on PayPal button and signs in
+ */
+Cypress.Commands.add('paypalFlow', (email, password) => {
+  // Enable popup capture
+  cy.capturePopup();
+  // Click on the PayPal button inside PayPal's iframe
+  cy.get('iframe').iframe().find('div[data-funding-source="paypal"]').click();
+  cy.wait(5000);
+
+  cy.popup().then(($body) => {
+    // Check if we need to sign in
+    if ($body.find('input#email').length) {
+      cy.popup().find('input#email').clear().type(email);
+      // Click on the button in case it's a 2-step flow
+      cy.popup().find('button:visible').first().click();
+      cy.popup().find('input#password').clear().type(password);
+      cy.popup().find('button#btnLogin').click();
+    }
+  });
+  cy.wait(5000);
+});
+
+/**
+ * Returns the price shown in PayPal's summary
+ */
+Cypress.Commands.add('paypalPrice', () => {
+  return cy.popup().find('span[data-testid="header-cart-total"]');
+});
+
+/**
+ * Completes PayPal flow
+ */
+Cypress.Commands.add('paypalComplete', () => {
+  cy.popup().find('ul.charges').should('not.to.be.empty');
+  cy.wait(1000);
+  cy.popup().find('button#payment-submit-btn').click();
+  cy.wait(10000);
+});
 
 describe('Payment Process Functionality', () => {
   beforeEach(() => {
@@ -36,14 +122,16 @@ describe('Payment Process Functionality', () => {
       });
 
     cy.url().should('include', '/shipping');
-
-    fillInShipping('84 Nha cua Thu Ha', 'Ho Chi Minh', '78', 'Vietnam');
+    fillInShipping(
+      '21 Truong Cong Dinh, 14, Tan Binh',
+      'Ho Chi Minh',
+      '78',
+      'Vietnam'
+    );
 
     cy.url().should('include', '/payment');
-
     cy.get('button.btn.btn-primary').contains('Continue').should('be.visible');
     cy.get('button.btn.btn-primary').contains('Continue').click();
-
     cy.get('button.btn.btn-primary')
       .contains('Place Order')
       .should('be.visible')
@@ -56,9 +144,15 @@ describe('Payment Process Functionality', () => {
         orderId = text.trim().split(' ')[1];
         cy.log(`OrderID: ${orderId}`);
       });
-    getPayPalButton().click();
-    cy.wait(60000); // manual login time + waiting for order is paid notification to finish running only about 1 minute, pay attention to quick operation
-    // return to payment page
+
+    cy.paypalFlow(paymentAccount, paymentPassword);
+    cy.paypalPrice().should(
+      'to.contain',
+      `$${calcPrices([airpods]).totalPrice}`
+    );
+    cy.paypalComplete();
+    cy.get('div.alert.alert-success').should('be.visible');
+
     const today = new Date().toISOString().split('T')[0];
     cy.contains(`Paid on ${today}`).should('be.visible');
     navigateToProfile();
@@ -85,7 +179,12 @@ describe('Payment Process Functionality', () => {
 
     cy.url().should('include', '/shipping');
 
-    fillInShipping('84 Nha cua Thu Ha', 'Ho Chi Minh', '78', 'Vietnam');
+    fillInShipping(
+      '21 Truong Cong Dinh, 14, Tan Binh',
+      'Ho Chi Minh',
+      '78',
+      'Vietnam'
+    );
 
     cy.url().should('include', '/payment');
 
@@ -106,10 +205,15 @@ describe('Payment Process Functionality', () => {
         orderId = text.trim().split(' ')[1];
         cy.log(`OrderID: ${orderId}`);
       });
-    getPayPalButton().click();
 
-    cy.wait(60000); // manual login time + waiting for order is paid notification to finish running only about 1 minute, pay attention to quick operation
-    // return to payment page
+    cy.paypalFlow(paymentAccount, paymentPassword);
+    cy.paypalPrice().should(
+      'to.contain',
+      `$${calcPrices([airpods, iphone]).totalPrice}`
+    );
+    cy.paypalComplete();
+    cy.get('div.alert.alert-success').should('be.visible');
+
     const today = new Date().toISOString().split('T')[0];
     cy.contains(`Paid on ${today}`).should('be.visible');
     navigateToProfile();
@@ -136,7 +240,12 @@ describe('Payment Process Functionality', () => {
 
     cy.url().should('include', '/shipping');
 
-    fillInShipping('84 Nha cua Thu Ha', 'Ho Chi Minh', '78', 'Vietnam');
+    fillInShipping(
+      '21 Truong Cong Dinh, 14, Tan Binh',
+      'Ho Chi Minh',
+      '78',
+      'Vietnam'
+    );
 
     cy.url().should('include', '/payment');
 
@@ -155,9 +264,21 @@ describe('Payment Process Functionality', () => {
         orderId = text.trim().split(' ')[1];
         cy.log(`Mã đơn hàng: ${orderId}`);
       });
-    getPayPalButton().click();
-    cy.wait(15000); //Paypal login box appears, close the box within 1-2 seconds (press the x button on the box) to cancel payment and wait for the popup to finish
-    //return to the payment page
+
+    cy.capturePopup();
+    cy.get('iframe').iframe().find('div[data-funding-source="paypal"]').click();
+    cy.wait(5000);
+
+    //Close the popup
+    cy.window().then((win) => {
+      const close = win.close;
+      cy.stub(win, 'close').callsFake((...params) => {
+        // Capture the reference to the popup
+        state.popup = close(...params);
+        return state.popup;
+      });
+    });
+
     cy.contains(`Not Paid`).should('be.visible');
   });
 
@@ -181,7 +302,12 @@ describe('Payment Process Functionality', () => {
 
     cy.url().should('include', '/shipping');
 
-    fillInShipping('84 Nha cua Thu Ha', 'Ho Chi Minh', '78', 'Vietnam');
+    fillInShipping(
+      '21 Truong Cong Dinh, 14, Tan Binh',
+      'Ho Chi Minh',
+      '78',
+      'Vietnam'
+    );
 
     cy.url().should('include', '/payment');
 
@@ -200,10 +326,8 @@ describe('Payment Process Functionality', () => {
         orderId = text.trim().split(' ')[1];
         cy.log(`Mã đơn hàng: ${orderId}`);
       });
-    getPayPalButton().click();
-    cy.wait(20000);
-    //Paypal login box appears, logout (if needed) and enter invalid Paypal credentials, verify error message and cancel
-    //return to payment page
+
+    cy.paypalFlow('john@email.com', paymentPassword);
     cy.contains(`Not Paid`).should('be.visible');
   });
 });
