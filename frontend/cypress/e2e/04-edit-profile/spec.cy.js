@@ -125,8 +125,16 @@ describe('Edit Profile Functionality', () => {
     login('user@examplecom', validPassword);
     navigateToProfile();
 
-    cy.get('input#email').clear().type('ha le@example.com', { force: true });
-    cy.get('input#email').should('have.value', 'hale@example.com');
+    cy.get('input#email').clear();
+    cy.get('input#email').focus();
+    cy.realType('ha le@example.com');
+    cy.get('button[type="submit"]').contains('Update').click();
+    cy.get('input#email')
+      .invoke('prop', 'validationMessage')
+      .should(
+        'equal',
+        "A part followed by '@' should not contain the symbol ' '."
+      );
 
     cy.wait(6);
     logout();

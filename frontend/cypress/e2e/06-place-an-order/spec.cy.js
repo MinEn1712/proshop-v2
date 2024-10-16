@@ -5,18 +5,23 @@ import {
   verifyShoppingCart,
 } from '../helper';
 
+const user = {
+  email: 'test@gmail.com',
+  password: '123456',
+};
+const productIdOne = '66f39d68d3e4433c7c7fc952';
+const productIdTwo = '66f39d68d3e4433c7c7fc955';
+const notInStockProductId = '66f39d68d3e4433c7c7fc957';
+
 describe('Place Order Function', () => {
   beforeEach(() => {
     cy.visit('http://localhost:3000/');
   });
 
   it('Verify successfull adding products to cart', () => {
-    login('test@gmail.com', '123456');
+    login(user.email, user.password);
 
-    cy.get('.row')
-      .find('a[href="/product/66f39d68d3e4433c7c7fc952"]')
-      .first()
-      .click();
+    cy.get('.row').find(`a[href="/product/${productIdOne}"]`).first().click();
     cy.get('div.row .col select.form-control').select('5');
     cy.contains('button', 'Add To Cart').click();
     cy.get('span.badge.rounded-pill.bg-success').should('exist');
@@ -24,12 +29,9 @@ describe('Place Order Function', () => {
   });
 
   it('Verify unsuccessful adding products to cart when Qty equal 0', () => {
-    login('test@gmail.com', '123456');
+    login(user.email, user.password);
 
-    cy.get('.row')
-      .find('a[href="/product/66f39d68d3e4433c7c7fc952"]')
-      .first()
-      .click();
+    cy.get('.row').find(`a[href="/product/${productIdOne}"]`).first().click();
     cy.get('div.row .col select.form-control')
       .find('option[value="0"]')
       .should('not.exist');
@@ -37,9 +39,9 @@ describe('Place Order Function', () => {
 
   // use order that has zero countinstock
   it('Verify can not add products to cart when status is not in stock', () => {
-    login('test@gmail.com', '123456');
+    login(user.email, user.password);
     cy.get('.row')
-      .find('a[href="/product/66f39d68d3e4433c7c7fc957"]')
+      .find(`a[href="/product/${notInStockProductId}"]`)
       .first()
       .click();
     cy.contains('button', 'Add To Cart').should('be.disabled');
@@ -47,10 +49,10 @@ describe('Place Order Function', () => {
   });
 
   it('Verify seeing products in the cart', () => {
-    login('test@gmail.com', '123456');
+    login(user.email, user.password);
     cy.wait(1000);
-    addToCart('/product/66f39d68d3e4433c7c7fc955', '5');
-    addToCart('/product/66f39d68d3e4433c7c7fc952', '5');
+    addToCart(`/product/${productIdTwo}`, '5');
+    addToCart(`/product/${productIdOne}`, '5');
 
     cy.wait(1000);
     cy.get('a[href="/cart"]').click();
@@ -103,10 +105,10 @@ describe('Place Order Function', () => {
   });
 
   it('Verify changing successfully the number of quantity of the products in cart', () => {
-    login('test@gmail.com', '123456');
+    login(user.email, user.password);
     cy.wait(1000);
-    addToCart('/product/66f39d68d3e4433c7c7fc955', '5');
-    addToCart('/product/66f39d68d3e4433c7c7fc952', '5');
+    addToCart(`/product/${productIdTwo}`, '5');
+    addToCart(`/product/${productIdOne}`, '5');
 
     cy.wait(1000);
     cy.get('a[href="/cart"]').click();
@@ -124,10 +126,10 @@ describe('Place Order Function', () => {
   });
 
   it('Verify changing unsuccessfully the number of quanity of the products in cart when it is 0', () => {
-    login('test@gmail.com', '123456');
+    login(user.email, user.password);
     cy.wait(1000);
-    addToCart('/product/66f39d68d3e4433c7c7fc955', '5');
-    addToCart('/product/66f39d68d3e4433c7c7fc952', '5');
+    addToCart(`/product/${productIdTwo}`, '5');
+    addToCart(`/product/${productIdOne}`, '5');
 
     cy.wait(1000);
     cy.get('a[href="/cart"]').click();
@@ -144,10 +146,10 @@ describe('Place Order Function', () => {
   });
 
   it('Verify deleting the products out of the shopping cart', () => {
-    login('test@gmail.com', '123456');
+    login(user.email, user.password);
     cy.wait(1000);
-    addToCart('/product/66f39d68d3e4433c7c7fc955', '5');
-    addToCart('/product/66f39d68d3e4433c7c7fc952', '5');
+    addToCart(`/product/${productIdTwo}`, '5');
+    addToCart(`/product/${productIdOne}`, '5');
 
     cy.wait(1000);
     cy.get('a[href="/cart"]').click();
@@ -162,10 +164,10 @@ describe('Place Order Function', () => {
   });
 
   it('Verify direct successfully to the order summary page', () => {
-    login('test@gmail.com', '123456');
+    login(user.email, user.password);
     cy.wait(1000);
-    addToCart('/product/66f39d68d3e4433c7c7fc955', '5');
-    addToCart('/product/66f39d68d3e4433c7c7fc952', '5');
+    addToCart(`/product/${productIdTwo}`, '5');
+    addToCart(`/product/${productIdOne}`, '5');
 
     cy.wait(1000);
     cy.get('a[href="/cart"]').click();
@@ -263,10 +265,10 @@ describe('Place Order Function', () => {
   });
 
   it('Verify successfully place order', () => {
-    login('test@gmail.com', '123456');
+    login(user.email, user.password);
     cy.wait(1000);
-    addToCart('/product/66f39d68d3e4433c7c7fc955', '5');
-    addToCart('/product/66f39d68d3e4433c7c7fc952', '5');
+    addToCart(`/product/${productIdTwo}`, '5');
+    addToCart(`/product/${productIdOne}`, '5');
 
     cy.wait(1000);
     cy.get('a[href="/cart"]').click();
@@ -457,10 +459,10 @@ describe('Place Order Function', () => {
   });
 
   it('Verify cannot direct to payment method when missing field shipping', () => {
-    login('test@gmail.com', '123456');
+    login(user.email, user.password);
     cy.wait(1000);
-    addToCart('/product/66f39d68d3e4433c7c7fc955', '5');
-    addToCart('/product/66f39d68d3e4433c7c7fc952', '5');
+    addToCart(`/product/${productIdTwo}`, '5');
+    addToCart(`/product/${productIdOne}`, '5');
 
     cy.wait(1000);
     cy.get('a[href="/cart"]').click();
@@ -476,7 +478,7 @@ describe('Place Order Function', () => {
   });
 
   it('Verify cannot proceed to checkout showed when the cart is empty', () => {
-    login('test@gmail.com', '123456');
+    login(user.email, user.password);
     cy.wait(1000);
     cy.get('a[href="/cart"]').click();
     cy.get('.col-md-4')
@@ -488,7 +490,7 @@ describe('Place Order Function', () => {
   });
 
   it('Verify no products show if the cart is empty', () => {
-    login('test@gmail.com', '123456');
+    login(user.email, user.password);
     cy.wait(1000);
     cy.get('a[href="/cart"]').click();
     cy.get('div[role="alert"]')
@@ -505,10 +507,10 @@ describe('Place Order Function', () => {
   });
 
   it('Verify cart is empty after successfully place order', () => {
-    login('test@gmail.com', '123456');
+    login(user.email, user.password);
     cy.wait(1000);
-    addToCart('/product/66f39d68d3e4433c7c7fc955', '5');
-    addToCart('/product/66f39d68d3e4433c7c7fc952', '5');
+    addToCart(`/product/${productIdTwo}`, '5');
+    addToCart(`/product/${productIdOne}`, '5');
 
     cy.wait(1000);
     cy.get('a[href="/cart"]').click();

@@ -168,7 +168,7 @@ export function confirmChangePassword(password, confirmPassword) {
 }
 
 export function logout() {
-  cy.get('a#username').click();
+  cy.get('a#username').click({ force: true });
   cy.get('a.dropdown-item').contains('Logout').click();
 }
 
