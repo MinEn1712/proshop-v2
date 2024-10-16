@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 export function generateUniqueEmail() {
   const timestamp = Date.now();
   return `user${timestamp}@example.com`;
@@ -45,6 +44,26 @@ export function addToCart(productPath, qty) {
     .select(qty, { force: true })
     .trigger('change');
   cy.contains('button', 'Add To Cart').click();
+}
+
+export function addProductToCart(productName) {
+  cy.get(`a:contains(${productName})`)
+    .filter(':visible')
+    .first()
+    .scrollIntoView()
+    .click();
+
+  cy.get('button.btn.btn-primary')
+    .first()
+    .scrollIntoView()
+    .then(($btn) => {
+      if ($btn.is(':visible')) {
+        cy.wrap($btn).click();
+      } else {
+        cy.log('Can not find "Add To Cart" button.');
+        throw new Error('Can not find "Add To Cart" button.');
+      }
+    });
 }
 
 export function verifyShoppingCart(productNumber, qtyList) {
@@ -124,6 +143,19 @@ export function placeAnOrderToView() {
   cy.get('button').contains('Place Order').click();
 }
 
+export function getPayPalButton() {
+  return cy
+    .get('iframe[title="PayPal"]')
+    .should('exist')
+    .then(($iframe) => {
+      const $body = $iframe.contents().find('body');
+      cy.wrap($body)
+        .find('div[data-funding-source="paypal"]')
+        .should('be.visible')
+        .click();
+    });
+}
+
 export function confirmChangePassword(password, confirmPassword) {
   cy.wait(1000);
   cy.get('a#username').click();
@@ -138,4 +170,26 @@ export function confirmChangePassword(password, confirmPassword) {
 export function logout() {
   cy.get('a#username').click({ force: true });
   cy.get('a.dropdown-item').contains('Logout').click();
+}
+
+function addDecimals(num) {
+  return (Math.round(num * 100) / 100).toFixed(2);
+}
+
+export function calcPrices(orderItems) {
+  const itemsPrice = orderItems.reduce(
+    (acc, item) => acc + (item.price * 100 * item.qty) / 100,
+    0
+  );
+
+  const shippingPrice = itemsPrice > 100 ? 0 : 10;
+  const taxPrice = 0.15 * itemsPrice;
+  const totalPrice = itemsPrice + shippingPrice + taxPrice;
+
+  return {
+    itemsPrice: addDecimals(itemsPrice),
+    shippingPrice: addDecimals(shippingPrice),
+    taxPrice: addDecimals(taxPrice),
+    totalPrice: addDecimals(totalPrice),
+  };
 }
