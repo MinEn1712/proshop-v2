@@ -1,8 +1,10 @@
+/* eslint-disable no-undef */
 //Trước khi chạy test file này phải đổi mật khẩu của user về ban đầu (123456)
-import { confirmChangePassword, login } from '../helper';
+
+import { confirmChangePassword, login, registration } from '../helper';
 
 const validPassword = 'N3wP@ss12e!';
-const email = 'jane@email.com';
+const email = 'quynhdao@gmail.com';
 
 beforeEach(() => {
   cy.visit('http://localhost:3000');
@@ -10,6 +12,7 @@ beforeEach(() => {
 
 describe('Change Password', () => {
   it('verify changing password successfully', () => {
+    registration('Quynh', 'quynhdao@gmail.com', '123456', '123456');
     login(email, '123456');
     confirmChangePassword(validPassword, validPassword);
     cy.contains('div', 'Profile updated successfully').should('be.visible');
@@ -75,18 +78,18 @@ describe('Change Password', () => {
 
   it('Verify changing password with password contains user information (user name)', () => {
     login(email, 'Pass1111!');
-    confirmChangePassword('JaneDoe1936!', 'JaneDoe1936!');
+    confirmChangePassword('QuynhDao1936!', 'QuynhDao1936!');
     cy.contains('div', 'Invalid password').should('be.visible');
   });
 
   it('Verify changing password with password contains user email', () => {
-    login(email, 'Pass1111!');
-    confirmChangePassword('JaneDoe1936!', 'JaneDoe1936!');
+    login(email, 'QuynhDao1936!');
+    confirmChangePassword('QuynhDao@gmail.com1936!', 'QuynhDao@gmail.com1936!');
     cy.contains('div', 'Invalid password').should('be.visible');
   });
 
   it('Verify changing password with common password', () => {
-    login(email, 'JaneDoe1936!');
+    login(email, 'QuynhDao@gmail.com1936!');
     confirmChangePassword('Password1!', 'Password1!');
     cy.contains('div', 'Invalid password').should('be.visible');
   });
