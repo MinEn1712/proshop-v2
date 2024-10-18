@@ -1,4 +1,9 @@
-import { fillInShipping, generateUniqueEmail, registration } from '../helper';
+import {
+  calcPrices,
+  fillInShipping,
+  generateUniqueEmail,
+  registration,
+} from '../helper';
 
 const newUser = {
   name: 'Minh Anh',
@@ -23,17 +28,79 @@ const updatedInfoByAdmin = {
   email: generateUniqueEmail(),
 };
 
-const updatedProductInfo = {
-  name: 'Laptop',
-  price: '1000',
-  image: 'https://picsum.photos/id/1/200',
-  brand: 'Apple',
-  category: 'Electronics',
-  countInStock: '15',
-  description: 'Best laptop ever',
-};
+//Payment information (change to your own account)
+const paymentAccount = 'proshopbuyer123@gmail.com';
+const paymentPassword = '12345678';
+
+// const updatedProductInfo = {
+//   name: 'Laptop',
+//   price: '1000',
+//   image: 'https://picsum.photos/id/1/200',
+//   brand: 'Apple',
+//   category: 'Electronics',
+//   countInStock: '15',
+//   description: 'Best laptop ever',
+// };
 
 const productId = '670b4e1b651b975306c4fe8f';
+const product = {
+  name: 'Airpods Wireless Bluetooth Headphones',
+  price: 89.99,
+  qty: 2,
+};
+
+Cypress.Commands.add('iframe', { prevSubject: 'element' }, ($iframe) => {
+  return new Cypress.Promise((resolve) => {
+    $iframe.ready(function () {
+      resolve($iframe.contents().find('body'));
+    });
+  });
+});
+
+const state = {};
+
+Cypress.Commands.add('capturePopup', () => {
+  cy.window().then((win) => {
+    const open = win.open;
+    cy.stub(win, 'open').callsFake((...params) => {
+      // Capture the reference to the popup
+      state.popup = open(...params);
+      return state.popup;
+    });
+  });
+});
+
+Cypress.Commands.add('popup', () => {
+  const popup = Cypress.$(state.popup.document);
+  return cy.wrap(popup.contents().find('body'));
+});
+
+Cypress.Commands.add('paypalFlow', (email, password) => {
+  cy.capturePopup();
+  cy.get('iframe').iframe().find('div[data-funding-source="paypal"]').click();
+  cy.wait(5000);
+
+  cy.popup().then(($body) => {
+    if ($body.find('input#email').length) {
+      cy.popup().find('input#email').clear().type(email);
+      cy.popup().find('button:visible').first().click();
+      cy.popup().find('input#password').clear().type(password);
+      cy.popup().find('button#btnLogin').click();
+    }
+  });
+  cy.wait(5000);
+});
+
+Cypress.Commands.add('paypalPrice', () => {
+  return cy.popup().find('span[data-testid="header-cart-total"]');
+});
+
+Cypress.Commands.add('paypalComplete', () => {
+  cy.popup().find('ul.charges').should('not.to.be.empty');
+  cy.wait(1000);
+  cy.popup().find('button#payment-submit-btn').click();
+  cy.wait(10000);
+});
 
 describe('E2E Testing', () => {
   it('Should run successfully', () => {
@@ -73,7 +140,7 @@ describe('E2E Testing', () => {
       'have.text',
       'Profile updated successfully'
     );
-    cy.wait(2000);
+    cy.wait(5000);
 
     //Logout
     cy.get('a#username').click({ force: true });
@@ -90,8 +157,11 @@ describe('E2E Testing', () => {
     cy.contains('h1', 'Latest Products').scrollIntoView();
 
     //View product details
-    cy.get('.row').find(`a[href="/product/${productId}"]`).first().click();
-    cy.url().should('include', `/product/${productId}`);
+    cy.get(`a:contains(${product.name})`)
+      .filter(':visible')
+      .first()
+      .scrollIntoView()
+      .click();
 
     //Add product to cart
     cy.get('div.row .col select.form-control').select('2');
@@ -112,12 +182,17 @@ describe('E2E Testing', () => {
       });
     fillInShipping('227 Nguyen Van Cu', 'TPHCM', '70000', 'Vietnam');
     cy.contains('button[type="submit"]', 'Continue').click();
-    //TODO: Add verification
     cy.contains('button', 'Place Order').click();
     cy.wait(2000);
 
     //Payment process
-    //TODO: Add payment process
+    cy.paypalFlow(paymentAccount, paymentPassword);
+    cy.paypalPrice().should(
+      'to.contain',
+      `$${calcPrices([product]).totalPrice}`
+    );
+    cy.paypalComplete();
+    cy.get('div.alert.alert-success').should('be.visible');
 
     //View order history
     cy.get('a#username').click();
@@ -208,10 +283,8 @@ describe('E2E Testing', () => {
     cy.get('td').find('a').last().click();
 
     //Mark order as delivered
-    //If it is paid
-    //TODO: Add verification
-    // cy.get('button').contains('Mark As Delivered').click();
-    // cy.get('div[role="alert"]').should('exist');
+    cy.get('button').contains('Mark As Delivered').click();
+    cy.get('div[role="alert"]').contains('Delivered on').should('exist');
 
     //Logout
     cy.get('a#username').click({ force: true });
@@ -220,10 +293,10 @@ describe('E2E Testing', () => {
 
     //USER FLOW 2
     //Login
-    cy.get('input#email').type(updatedInfoByAdmin.email);
+    cy.get('input#email').type(updatedInfo.email);
     cy.get('input#password').type(updatedInfo.password);
     cy.get('button[type="submit"]').contains('Sign In').click();
-    cy.get('a#username').should('have.text', updatedInfoByAdmin.name);
+    cy.get('a#username').should('have.text', updatedInfo.name);
 
     //View order history
     cy.get('a#username').click();
