@@ -12,14 +12,22 @@ beforeEach(() => {
 
 describe('Change Password', () => {
   it('verify changing password successfully', () => {
+    cy.get('a[href="/login"]').click();
+    cy.contains('a', 'Register').click();
     registration('Quynh', 'quynhdao@gmail.com', '123456', '123456');
-    login(email, '123456');
     confirmChangePassword(validPassword, validPassword);
     cy.contains('div', 'Profile updated successfully').should('be.visible');
   });
 
-  it('verify sign in with new password', () => {
+  it('Verify sign in with new password', () => {
     login(email, validPassword);
+  });
+
+  it('Verify changing password with password reuse', () => {
+    login(email, validPassword);
+    cy.get('#currentPassword').should('exist');
+    confirmChangePassword(validPassword, validPassword);
+    cy.contains('div', 'Invalid password').should('be.visible');
   });
 
   it('Verify changing password with password length less than 8 characters', () => {
@@ -34,8 +42,8 @@ describe('Change Password', () => {
     cy.contains('div', 'Passwords do not match').should('be.visible');
   });
 
-  it('Verify changing password with password reuse', () => {
-    login(email, 'New12!');
+  it('Verify changing password with password reuse (same as previous current password)', () => {
+    login(email, 'NewPass@@12!');
     confirmChangePassword(validPassword, validPassword);
     cy.contains('div', 'Password has been used').should('be.visible');
   });
@@ -100,4 +108,47 @@ describe('Change Password', () => {
     cy.get('.navbar-brand').click();
     cy.contains('div', 'Profile updated successfully').should('not.be.visible');
   });
+
+  it('Verify changing password with auto-fill', () => {
+    login(email, 'Password1!');
+    cy.get('#currentPassword').should('exist');
+    confirmChangePassword(validPassword, validPassword);
+    cy.contains('div', 'Invalid password').should('be.visible');
+  });
+
+  it('Verify canceling password change process', () => {
+    login(email, 'Password1!');
+    cy.get('a#username').click();
+    cy.get('a.dropdown-item[href="/profile"]').click();
+    cy.get('#password').type(validPassword);
+    cy.get('#confirmPassword').type(validPassword);
+    cy.get('.navbar-brand')
+      .should('be.visible') 
+      .click();
+  });
+
+  it('Verify blank new password field', () => {
+    login(email, 'Password1!');
+    cy.get('a#username').click();
+    cy.get('a.dropdown-item[href="/profile"]').click();
+    cy.get('#confirmPassword').type(validPassword);
+    cy.get('.navbar-brand')
+      .should('be.visible') 
+      .click();
+    cy.contains('Update').click();
+    cy.contains('div', 'Passwords do not match').should('not.be.visible');
+  });
+
+  it('Verify blank confirm password field', () => {
+    login(email, 'Password1!');
+    cy.get('a#username').click();
+    cy.get('a.dropdown-item[href="/profile"]').click();
+    cy.get('#password').type(validPassword);
+    cy.get('.navbar-brand')
+      .should('be.visible') 
+      .click();
+    cy.contains('Update').click();
+    cy.contains('div', 'Passwords do not match').should('not.be.visible');
+  });
+
 });
