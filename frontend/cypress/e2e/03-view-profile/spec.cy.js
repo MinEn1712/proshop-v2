@@ -6,9 +6,9 @@ const longUserInfo = {
   name: "I am a very long email and password! Very long I'm testing",
 };
 const userNoOrder = {
-  email: 'john@email.com',
+  email: 'john2@email.com',
   password: '123456',
-  name: 'John Doe',
+  name: 'John Doe 2',
 };
 const userHavingOrder = {
   email: 'test@gmail.com',

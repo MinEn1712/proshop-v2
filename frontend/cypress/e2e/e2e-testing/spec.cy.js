@@ -49,59 +49,6 @@ const product = {
   qty: 2,
 };
 
-Cypress.Commands.add('iframe', { prevSubject: 'element' }, ($iframe) => {
-  return new Cypress.Promise((resolve) => {
-    $iframe.ready(function () {
-      resolve($iframe.contents().find('body'));
-    });
-  });
-});
-
-const state = {};
-
-Cypress.Commands.add('capturePopup', () => {
-  cy.window().then((win) => {
-    const open = win.open;
-    cy.stub(win, 'open').callsFake((...params) => {
-      // Capture the reference to the popup
-      state.popup = open(...params);
-      return state.popup;
-    });
-  });
-});
-
-Cypress.Commands.add('popup', () => {
-  const popup = Cypress.$(state.popup.document);
-  return cy.wrap(popup.contents().find('body'));
-});
-
-Cypress.Commands.add('paypalFlow', (email, password) => {
-  cy.capturePopup();
-  cy.get('iframe').iframe().find('div[data-funding-source="paypal"]').click();
-  cy.wait(5000);
-
-  cy.popup().then(($body) => {
-    if ($body.find('input#email').length) {
-      cy.popup().find('input#email').clear().type(email);
-      cy.popup().find('button:visible').first().click();
-      cy.popup().find('input#password').clear().type(password);
-      cy.popup().find('button#btnLogin').click();
-    }
-  });
-  cy.wait(5000);
-});
-
-Cypress.Commands.add('paypalPrice', () => {
-  return cy.popup().find('span[data-testid="header-cart-total"]');
-});
-
-Cypress.Commands.add('paypalComplete', () => {
-  cy.popup().find('ul.charges').should('not.to.be.empty');
-  cy.wait(1000);
-  cy.popup().find('button#payment-submit-btn').click();
-  cy.wait(10000);
-});
-
 describe('E2E Testing', () => {
   it('Should run successfully', () => {
     //USER FLOW 1

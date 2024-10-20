@@ -12,4 +12,5 @@ module.exports = defineConfig({
       // and load any plugins that require the Node environment
     },
   },
+  // video: true,
 });

@@ -249,9 +249,8 @@ describe('Place Order Function', () => {
                 .invoke('text')
                 .then((value) => {
                   expect(value).to.equal(listProduct[i]);
-                  i++;
                 });
-              i = 0;
+
               cy.wrap($el)
                 .find('.col-md-4')
                 .invoke('text')
